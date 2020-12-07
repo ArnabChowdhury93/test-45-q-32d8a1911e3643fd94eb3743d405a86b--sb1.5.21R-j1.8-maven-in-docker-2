@@ -3,6 +3,7 @@ package org.codejudge.sb.controller;
 import io.swagger.annotations.ApiOperation;
 import org.codejudge.sb.database.LeadInfoRepository;
 import org.codejudge.sb.models.LeadInfo;
+import org.codejudge.sb.models.RequestObjectLead;
 import org.codejudge.sb.models.ResponseObjectStatus;
 import org.codejudge.sb.models.Status;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,11 +41,18 @@ public class AppController {
     }
 
     @PostMapping("/leads/")
-    public ResponseEntity<?> addLeadInfo(@RequestBody LeadInfo lead_info) {
+    public ResponseEntity<?> addLeadInfo(@RequestBody RequestObjectLead requestObjectLead) {
        try{
-            lead_info.setStatus(Status.CREATED);
-            leadInfoRepository.save(lead_info);
-            return new ResponseEntity<>(lead_info, HttpStatus.CREATED);
+            LeadInfo lead_Info = new LeadInfo();
+            lead_Info.setFirst_name(requestObjectLead.getFirst_name());
+            lead_Info.setLast_name(requestObjectLead.getLast_name());
+            lead_Info.setEmail(requestObjectLead.getEmail());
+            lead_Info.setMobile(requestObjectLead.getMobile());
+            lead_Info.setLocation_string(requestObjectLead.getLocation_string());
+            lead_Info.setLocation_type(requestObjectLead.getLocation_type());
+            lead_Info.setStatus(Status.CREATED);
+            leadInfoRepository.save(lead_Info);
+            return new ResponseEntity<>(lead_Info, HttpStatus.CREATED);
        }
        catch(Throwable ex){
            ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
