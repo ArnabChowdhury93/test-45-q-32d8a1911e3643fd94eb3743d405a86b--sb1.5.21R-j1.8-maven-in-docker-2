@@ -2,10 +2,6 @@ package org.codejudge.sb.models;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-
 @Data
 public class RequestObjectLead {
 

@@ -27,42 +27,34 @@ public class AppController {
     @GetMapping("/leads/")
     public ResponseEntity<?> getLeadInfo(@RequestParam("lead_id") Integer lead_id) {
         LeadInfo leadInfo = new LeadInfo();
-        if(null==lead_id){
+        if (null == lead_id) {
             ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
             responseObjectStatus.setStatus("failure");
             responseObjectStatus.setReason("lead_id is null");
             return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
         }
         leadInfo = leadInfoRepository.findOne(lead_id);
-        if(null==leadInfo){
+        if (null != leadInfo) {
             return new ResponseEntity<>(new LeadInfo(), HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(new LeadInfo(), HttpStatus.OK);
     }
 
     @PostMapping("/leads/")
-    public ResponseEntity<?> addLeadInfo(@RequestBody RequestObjectLead requestObjectLead) {
-       try{
-            LeadInfo lead_Info = new LeadInfo();
-            lead_Info.setFirst_name(requestObjectLead.getFirst_name());
-            lead_Info.setLast_name(requestObjectLead.getLast_name());
-            lead_Info.setEmail(requestObjectLead.getEmail());
-            lead_Info.setMobile(requestObjectLead.getMobile());
-            lead_Info.setLocation_string(requestObjectLead.getLocation_string());
-            lead_Info.setLocation_type(requestObjectLead.getLocation_type());
-            lead_Info.setStatus(Status.CREATED);
-            leadInfoRepository.save(lead_Info);
-            return new ResponseEntity<>(lead_Info, HttpStatus.CREATED);
-       }
-       catch(Throwable ex){
-           ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
-           responseObjectStatus.setStatus("failure");
-           responseObjectStatus.setReason(ex.getMessage());
-           return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
-       }
+    public ResponseEntity<?> addLeadInfo(@RequestBody LeadInfo lead_info) {
+        try {
+            lead_info.setStatus(Status.CREATED);
+            leadInfoRepository.save(lead_info);
+            return new ResponseEntity<>(lead_info, HttpStatus.CREATED);
+        } catch (Throwable ex) {
+            ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
+            responseObjectStatus.setStatus("failure");
+            responseObjectStatus.setReason(ex.getMessage());
+            return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
+        }
     }
 
-   /* @PutMapping("/leads/")
+    /*@PutMapping("/leads/")
     public ResponseEntity<?>*/
 
 }
