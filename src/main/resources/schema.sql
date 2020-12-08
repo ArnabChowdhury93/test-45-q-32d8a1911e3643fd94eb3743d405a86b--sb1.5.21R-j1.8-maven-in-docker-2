@@ -4,9 +4,9 @@ CREATE TABLE if not exists Lead_Info(
     last_name VARCHAR(255) NOT NULL,
     mobile VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
-    location_type ENUM('COUNTRY', 'CITY', 'ZIP'),
+    location_type ENUM('Country', 'City', 'Zip'),
     location_string VARCHAR(255) NOT NULL,
-    status ENUM('CREATED', 'CONTACTED'),
+    status ENUM('Created', 'Contacted'),
     communication VARCHAR(255) DEFAULT NULL,
     UNIQUE(mobile,email)
 );
