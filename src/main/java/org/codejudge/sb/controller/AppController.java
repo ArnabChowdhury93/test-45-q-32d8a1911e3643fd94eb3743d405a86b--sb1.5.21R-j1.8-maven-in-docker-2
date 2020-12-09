@@ -15,23 +15,26 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api")
 public class AppController {
 
+    public static final String LEAD_ID = "lead_id";
+    public static final String FAILURE = "failure";
+    public static final String SUCCESS = "success";
+    public static final String LEAD_ID_IS_NULL = "lead_id is null";
+
     @Autowired
     private LeadInfoRepository leadInfoRepository;
 
-    @ApiOperation("This is the hello world api")
-    @GetMapping("/")
-    public String hello() {
-        return "Hello World!!";
-    }
-
+    /**
+     * This controller method is used to fetch the Lead Info details from the stored Data
+     * based on the lead_id sent in the parameter
+     *
+     * @param lead_id which is the unique Id of the lead
+     * @return Response based on given lead id
+     */
     @GetMapping("/leads/{lead_id}")
-    public ResponseEntity<?> getLeadInfo(@PathVariable("lead_id") Integer lead_id) {
+    public ResponseEntity<?> getLeadInfo(@PathVariable(LEAD_ID) Integer lead_id) {
         LeadInfo leadInfo = new LeadInfo();
         if (null == lead_id) {
-            ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
-            responseObjectStatus.setStatus("failure");
-            responseObjectStatus.setReason("lead_id is null");
-            return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
+            return getResponseEntityForNullLeadId();
         }
         leadInfo = leadInfoRepository.findOne(lead_id);
         if (null == leadInfo) {
@@ -40,6 +43,12 @@ public class AppController {
         return new ResponseEntity<>(leadInfo, HttpStatus.OK);
     }
 
+    /**
+     * This method is used to add a new lead into the DB based on the data sent in the request body
+     *
+     * @param lead_info which contains the lead details
+     * @return the outcome of the save
+     */
     @PostMapping("/leads/")
     public ResponseEntity<?> addLeadInfo(@RequestBody LeadInfo lead_info) {
         try {
@@ -48,16 +57,38 @@ public class AppController {
             return new ResponseEntity<>(lead_info, HttpStatus.CREATED);
         } catch (Throwable ex) {
             ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
-            responseObjectStatus.setStatus("failure");
+            responseObjectStatus.setStatus(FAILURE);
             responseObjectStatus.setReason(ex.getMessage());
             return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
         }
     }
 
+    /**
+     * This method is used to update the existing lead details
+     *
+     * @param lead_id which is used as an identifier for the specific lead to be updated
+     * @param lead_info which contains the new updated details of the lead
+     * @return the outcome of the update
+     */
     @PutMapping("/leads/{lead_id}")
-    public ResponseEntity<?> updateLeadInfo(@PathVariable("lead_id") Integer lead_id, @RequestBody LeadInfo lead_info){
+    public ResponseEntity<?> updateLeadInfo(@PathVariable(LEAD_ID) Integer lead_id, @RequestBody LeadInfo lead_info){
         ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
 
+        LeadInfo leadInfoFromDB = getUpdatedLeadInfo(lead_id, lead_info);
+
+        try{
+            leadInfoRepository.save(leadInfoFromDB);
+            responseObjectStatus.setStatus(SUCCESS);
+        }
+        catch(Throwable ex){
+            responseObjectStatus.setStatus(FAILURE);
+            responseObjectStatus.setReason(ex.getMessage());
+            return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(responseObjectStatus, HttpStatus.ACCEPTED);
+    }
+
+    private LeadInfo getUpdatedLeadInfo(Integer lead_id, LeadInfo lead_info) {
         LeadInfo leadInfoFromDB = leadInfoRepository.findOne(lead_id);
         leadInfoFromDB.setFirst_name(lead_info.getFirst_name());
         leadInfoFromDB.setLast_name(lead_info.getLast_name());
@@ -65,47 +96,44 @@ public class AppController {
         leadInfoFromDB.setEmail(lead_info.getEmail());
         leadInfoFromDB.setLocation_type(lead_info.getLocation_type());
         leadInfoFromDB.setLocation_string(lead_info.getLocation_string());
-
-        try{
-            leadInfoRepository.save(leadInfoFromDB);
-            responseObjectStatus.setStatus("success");
-        }
-        catch(Throwable ex){
-            responseObjectStatus.setStatus("failure");
-            responseObjectStatus.setReason(ex.getMessage());
-            return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
-        }
-        return new ResponseEntity<>(responseObjectStatus, HttpStatus.ACCEPTED);
+        return leadInfoFromDB;
     }
 
+    /**
+     * This method is used to delete the lead with given lead_id
+     *
+     * @param lead_id which is used as an identifier for the specific lead to be deleted
+     * @return the outcome of the delete operation
+     */
     @DeleteMapping("/leads/{lead_id}")
-    public ResponseEntity<?> removeLeadInfo(@PathVariable("lead_id") Integer lead_id){
+    public ResponseEntity<?> removeLeadInfo(@PathVariable(LEAD_ID) Integer lead_id){
         if (null == lead_id) {
-            ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
-            responseObjectStatus.setStatus("failure");
-            responseObjectStatus.setReason("lead_id is null");
-            return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
+            return getResponseEntityForNullLeadId();
         }
         ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
         try{
             leadInfoRepository.delete(lead_id);
-            responseObjectStatus.setStatus("success");
+            responseObjectStatus.setStatus(SUCCESS);
         }
         catch(Throwable ex){
-            responseObjectStatus.setStatus("failure");
+            responseObjectStatus.setStatus(FAILURE);
             responseObjectStatus.setReason(ex.getMessage());
             return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>(responseObjectStatus, HttpStatus.OK);
     }
 
+    /**
+     * This method is used to mark the lead's communication status
+     *
+     * @param lead_id which is used as an identifier for the specific lead to be marked
+     * @param lead_info which contains the new updated communication status of the lead
+     * @return the outcome of the marking process
+     */
     @PutMapping("/mark_lead/{lead_id}")
-    public ResponseEntity<?> markLeadInfo(@PathVariable("lead_id") Integer lead_id, @RequestBody LeadInfo lead_info){
+    public ResponseEntity<?> markLeadInfo(@PathVariable(LEAD_ID) Integer lead_id, @RequestBody LeadInfo lead_info){
         if (null == lead_id || null==lead_info.getCommunication()) {
-            ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
-            responseObjectStatus.setStatus("failure");
-            responseObjectStatus.setReason("lead_id is null");
-            return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
+            return getResponseEntityForNullLeadId();
         }
 
         LeadInfo leadInfoFromDB = leadInfoRepository.findOne(lead_id);
@@ -115,6 +143,12 @@ public class AppController {
         return new ResponseEntity<>(leadInfoFromDB, HttpStatus.ACCEPTED);
     }
 
+    private ResponseEntity<?> getResponseEntityForNullLeadId() {
+        ResponseObjectStatus responseObjectStatus = new ResponseObjectStatus();
+        responseObjectStatus.setStatus(FAILURE);
+        responseObjectStatus.setReason(LEAD_ID_IS_NULL);
+        return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
+    }
 
 
 }
