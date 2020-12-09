@@ -1,9 +1,7 @@
 package org.codejudge.sb.controller;
 
-import io.swagger.annotations.ApiOperation;
 import org.codejudge.sb.database.LeadInfoRepository;
 import org.codejudge.sb.models.LeadInfo;
-import org.codejudge.sb.models.RequestObjectLead;
 import org.codejudge.sb.models.ResponseObjectStatus;
 import org.codejudge.sb.models.Status;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,11 +30,10 @@ public class AppController {
      */
     @GetMapping("/leads/{lead_id}")
     public ResponseEntity<?> getLeadInfo(@PathVariable(LEAD_ID) Integer lead_id) {
-        LeadInfo leadInfo = new LeadInfo();
         if (null == lead_id) {
             return getResponseEntityForNullLeadId();
         }
-        leadInfo = leadInfoRepository.findOne(lead_id);
+        LeadInfo leadInfo = leadInfoRepository.findOne(lead_id);
         if (null == leadInfo) {
             return new ResponseEntity<>(new LeadInfo(), HttpStatus.NOT_FOUND);
         }
