@@ -1,6 +1,8 @@
 package org.codejudge.sb.controller;
 
+import org.codejudge.sb.database.AttendanceDataRepository;
 import org.codejudge.sb.database.LeadInfoRepository;
+import org.codejudge.sb.models.AttendanceData;
 import org.codejudge.sb.models.LeadInfo;
 import org.codejudge.sb.models.ResponseObjectStatus;
 import org.codejudge.sb.models.Status;
@@ -20,6 +22,9 @@ public class AppController {
 
     @Autowired
     private LeadInfoRepository leadInfoRepository;
+
+    @Autowired
+    private AttendanceDataRepository attendanceDataRepository;
 
     /**
      * This controller method is used to fetch the Lead Info details from the stored Data
@@ -146,6 +151,14 @@ public class AppController {
         responseObjectStatus.setReason(LEAD_ID_IS_NULL);
         return new ResponseEntity<>(responseObjectStatus, HttpStatus.BAD_REQUEST);
     }
+
+    @PostMapping("/attendance/")
+    public ResponseEntity<?> addAttendence(@RequestBody AttendanceData attendanceData) {
+        attendanceDataRepository.save(attendanceData);
+        return new ResponseEntity<>(attendanceData, HttpStatus.CREATED);
+    }
+
+
 
 
 }
